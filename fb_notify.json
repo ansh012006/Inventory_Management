@@ -2,7 +2,7 @@
   "type": "service_account",
   "project_id": "srmc-5d645",
   "private_key_id": "Your_Api_Key",
-  "private_key": "-----BEGIN PRIVATE KEY-----\KEY\END PRIVATE KEY-----\n",
+  "private_key": "-----BEGIN PRIVATE KEY-----\"YOUR_KEY"\END PRIVATE KEY-----\n",
   "client_email": "firebase-adminsdk-fbsvc@srmc-5d645.iam.gserviceaccount.com",
   "client_id": "111449436577109292183",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
