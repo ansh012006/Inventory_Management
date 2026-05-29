@@ -1,0 +1,204 @@
+from flask import Flask, render_template, request
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect
+from datetime import date,timedelta,datetime
+from collections import defaultdict
+from flask_mail import Mail, Message
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///inventory.db"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'srms.inventory@gmail.com'
+app.config['MAIL_PASSWORD'] = 'ilslkasxuyqcqnke'  # Use app password, NOT your login
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+
+mail = Mail(app)
+
+def group_by_name(items):
+    grouped = defaultdict(list)
+    for item in items:
+        grouped[item.name].append(item)
+    return grouped
+
+def group_by_id(items):
+    grouped = defaultdict(list)
+    for item in items:
+        grouped[item.m_id].append(item)
+    return grouped
+
+
+
+def check_and_notify_due_services():
+    today = date.today()
+
+    machines = Machine.query.filter(Machine.ls_date != None, Machine.interval != None).all()
+    parts = Mpart.query.filter(Mpart.ls_date != None, Mpart.interval != None).all()
+
+    # Check single-unit machines
+    for m in machines:
+        next_date = m.ls_date + timedelta(days=m.interval)
+        days_left = (next_date - today).days
+        if days_left <= 10:
+            msg = f"[MACHINE] {m.name} service due on {next_date} (in {days_left} days)"
+            handle_alert(msg, days_left)
+
+    # Check assembled machine parts
+    for p in parts:
+        next_date = p.ls_date + timedelta(days=p.interval)
+        days_left = (next_date - today).days
+        if days_left <= 10:
+            msg = f"[PART] {p.name} (Machine ID: {p.m_id}) service due on {next_date} (in {days_left} days)"
+            handle_alert(msg, days_left)
+
+def handle_alert(message, days_left):
+    if days_left > 3:
+        print("🔔 UPCOMING:", message)  # Console/log only
+    elif days_left >= 0:
+        send_email_alert(message)
+    # No action if days_left < 0 (already overdue — you can change this if needed)
+
+def send_email_alert(body):
+    subject = "🔴 Machine Service Due Soon"
+    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["anantsaxena860@gmail.com"])
+    msg.body = body
+    try:
+        mail.send(msg)
+        print("✅ Email sent:", body)
+    except Exception as e:
+        print("❌ Failed to send email:", e)
+
+
+
+class MType(db.Model):
+    __tablename__ = 'm_type'  # ensure table name is consistent
+    sno = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    typee = db.Column(db.String(500), nullable=False)
+    interval = db.Column(db.Integer, nullable=True)
+
+class Parts(db.Model):
+    __tablename__ = 'parts'
+    sno = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    m_id = db.Column(db.Integer, db.ForeignKey('m_type.sno'), nullable=False)
+    interval = db.Column(db.Integer)
+
+class Machine(db.Model):
+    __tablename__ = 'machine'
+    sno = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    m_uid = db.Column(db.Integer)
+    typee = db.Column(db.String(500), nullable=False)
+    interval = db.Column(db.Integer, nullable=True)
+    up_date = db.Column(db.Date)
+    ls_date = db.Column(db.Date, nullable=True)
+
+class Mpart(db.Model):
+    __tablename__ = 'mpart'
+    sno = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    m_id = db.Column(db.Integer, db.ForeignKey('machine.sno'), nullable=False)
+    interval = db.Column(db.Integer, nullable=True)
+    ls_date = db.Column(db.Date)
+
+@app.route('/add', methods=['GET', 'POST'])
+def hello_world():
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
+        if form_type == 'type':
+            name = request.form.get('machine-type-name')
+            type_ = request.form.get('type-category')
+
+            if type_ == "single-unit":
+                days = request.form.get('service-interval')
+
+                q = MType(name=name, typee=type_, interval=int(days))
+                db.session.add(q)
+                db.session.commit()
+            else:
+                q = MType(name=name, typee=type_)
+                db.session.add(q)
+                db.session.commit()
+                # q.sno
+                i = 1
+                while request.form.get(f'part-name-{i}') and request.form.get(f'part-interval-{i}'):
+                    partname = request.form.get(f'part-name-{i}')
+                    days = request.form.get(f'part-interval-{i}')
+                    qu = Parts(name=partname, m_id=q.sno, interval=days)
+                    db.session.add(qu)
+                    i += 1
+                db.session.commit()
+        else:
+            uid = int(request.form.get('machine-uid'))
+            m = request.form.get('machine-type')
+            date = request.form.get('purchase-date')
+            q = MType.query.filter_by(sno=int(m)).first()
+            if q.typee == "single-unit":
+                q1 = Machine(name=q.name, m_uid=uid, typee=q.typee, interval=q.interval, up_date = datetime.strptime(date, '%Y-%m-%d'), ls_date=datetime.strptime(date, '%Y-%m-%d'))
+                db.session.add(q1)
+                db.session.commit()
+            else:
+                q1 = Machine(name=q.name, m_uid=uid, typee=q.typee, up_date=datetime.strptime(date, '%Y-%m-%d'))
+                db.session.add(q1)
+                q2 = Parts.query.filter_by(m_id=int(m)).all()
+                for x in q2:
+                    q3 = Mpart(name=x.name, m_id=q1.sno, interval=x.interval, ls_date=datetime.strptime(date, '%Y-%m-%d'))
+                    db.session.add(q3)
+                db.session.commit()
+
+
+    machines = MType.query.all()
+    return render_template("add.html",machines=machines)
+
+@app.route('/view',methods=['GET', 'POST'])
+def view():
+    q = Machine.query.filter_by(typee="single-unit").all()
+    q1 = Machine.query.filter_by(typee="assembled").all()
+    q2 = Mpart.query.all()
+    for m in q:
+        if m.ls_date and m.interval:
+            m.next_date = m.ls_date + timedelta(days=m.interval)
+
+    for p in q2:
+        if p.ls_date and p.interval:
+            p.next_date = p.ls_date + timedelta(days=p.interval)
+
+    grouped_s = group_by_name(q)
+    grouped_p = group_by_name(q1)
+    grouped_parts = group_by_id(q2)
+
+    return render_template("view.html", smachines=grouped_s, pmachines=grouped_p, parts=grouped_parts)
+
+
+@app.route('/check_notifications')
+def check_notifications():
+    check_and_notify_due_services()
+    return "Notification check complete."
+
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        inspector = inspect(db.engine)
+    app.run(debug=True)
+
+
+
+
+C:\Users\asus\PycharmProjects\inventory\.venv\Scripts\python.exe C:\Users\asus\PycharmProjects\inventory\app.py
+Public Key:
+ BMt1O3IfPK45-jzWBX5tboHdKO2jyDMTuviJXXWKgZi86OvgWPIWiVAVSKO2aHraqkmr40_E2cvHRKLLunWoNp8
+
+Private Key PEM (store safely):
+ -----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgDEXsj4zeWV2oi0D9A+3EuCcDL0MyCLRnHIEs4aebmgWhRANCAATLdTtyHzyuOfo81gV+bW6B3Sjto8gzE7r4iV11ioGYvOjr4FjyFolQFUijtmh62qpJq+NPxNnLx0Siy7p1qDaf
+-----END PRIVATE KEY-----
+
+
+Process finished with exit code 0

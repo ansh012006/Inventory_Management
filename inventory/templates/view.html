@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Equipment Registry - Machine Inventory System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      
+      --primary-dark: #17153B;
+      --primary-blue: #2E236C;
+      --deep-blue: #433D8B;
+      --light-purple: #C8ACD6;
+      
+
+      --steel-blue: #433D8B;
+      --slate-gray: #2E236C;
+      --iron-gray: #7f8c8d;
+      --concrete: #95a5a6;
+      --snow-white: #ecf0f1;
+      --paper-white: #f8f9fa;
+      --charcoal: #17153B;
+      --midnight: #17153B;
+      --amber: #f39c12;
+      --warning-orange: #e67e22;
+      --success-green: #27ae60;
+      --danger-red: #e74c3c;
+
+     
+      --background: linear-gradient(135deg, #f4f6f8 0%, #e8ecf0 100%);
+      --card-bg: var(--snow-white);
+      --surface: var(--paper-white);
+      --text-primary: var(--primary-dark);
+      --text-secondary: var(--primary-blue);
+      --text-muted: var(--deep-blue);
+      --border: #d1d5db;
+      --shadow: rgba(23, 21, 59, 0.15);
+      --shadow-heavy: rgba(23, 21, 59, 0.25);
+      --glow: 0 0 20px rgba(46, 35, 108, 0.3);
+
+    
+      --border-radius: 6px;
+      --border-radius-lg: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--background);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ENHANCED HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #17153B;
+      color: var(--snow-white);
+      padding: 16px 32px;
+      box-shadow: 0 8px 32px var(--shadow-heavy);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid var(--deep-blue);
+    }
+
+    header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    header img {
+        height: 52px;
+        filter: brightness(1.2) contrast(1.3);
+        border-radius: var(--border-radius);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    header h1 {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      user-select: none;
+    }
+
+    /* NAVIGATION */
+    nav {
+        background: rgba(46, 35, 108, 0.8);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        padding: 8px 32px;
+        gap: 24px;
+        box-shadow: 0 4px 20px var(--shadow);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        min-height: 56px;
+        margin-bottom: 20px;
+    }
+
+    nav a {
+        color: #ffffff;
+        font-weight: 600;
+        padding: 8px 20px;
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        user-select: none;
+        display: flex;
+        align-items: center;
+        height: 40px;
+        border: 2px solid transparent;
+        font-family: 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        text-decoration: none;
+    }
+
+    nav a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: var(--light-purple);
+        transform: translateY(-2px);
+    }
+
+    /* ENHANCED CONTROLS */
+    .controls-section {
+      margin-top: 20px;
+      max-width: 1200px;
+      margin: 0 auto 40px;
+      padding: 0 30px;
+    }
+
+    .controls-container {
+      background: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      padding: 25px 30px;
+      box-shadow: 0 8px 25px var(--shadow);
+      border: 2px solid var(--primary-blue);
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      flex-wrap: wrap;
+    }
+
+    .filter-control {
+      position: relative;
+    }
+
+    .clickable-heading {
+      background: linear-gradient(45deg, var(--primary-blue), var(--deep-blue));
+      color: var(--snow-white);
+      padding: 12px 24px;
+      border-radius: var(--border-radius-lg);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: 2px solid var(--deep-blue);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .clickable-heading::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(200, 172, 214, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .clickable-heading:hover::before {
+      left: 100%;
+    }
+
+    .clickable-heading:hover {
+      background: linear-gradient(45deg, var(--deep-blue), var(--light-purple));
+      box-shadow: var(--glow);
+      transform: translateY(-2px);
+    }
+
+    .filter-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 10px;
+      background: var(--card-bg);
+      border: 2px solid var(--primary-blue);
+      border-radius: var(--border-radius-lg);
+      padding: 20px;
+      box-shadow: 0 10px 30px var(--shadow-heavy);
+      z-index: 100;
+      min-width: 200px;
+      backdrop-filter: blur(10px);
+    }
+
+    .filter-menu label {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      transition: var(--transition);
+    }
+
+    .filter-menu label:hover {
+      color: var(--primary-blue);
+      background: rgba(46, 35, 108, 0.1);
+      border-radius: var(--border-radius);
+      padding-left: 10px;
+    }
+
+    .filter-menu input {
+      margin-right: 12px;
+      accent-color: var(--primary-blue);
+      transform: scale(1.2);
+    }
+
+    .search-container {
+      flex: 1;
+      position: relative;
+    }
+
+    #machine-search {
+      width: 100%;
+      padding: 15px 24px;
+      font-size: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      border: 2px solid var(--concrete);
+      border-radius: var(--border-radius-lg);
+      background: var(--paper-white);
+      color: var(--text-primary);
+      transition: var(--transition);
+    }
+
+    #machine-search:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      background: var(--snow-white);
+      box-shadow: 0 0 20px rgba(46, 35, 108, 0.2);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* ENHANCED INVENTORY */
+    .inventory-container {
+      max-width: 1200px;
+      margin: 0 auto 50px;
+      padding: 0 30px;
+    }
+
+    .machine-group-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      box-shadow: 0 10px 30px var(--shadow-heavy);
+      margin-bottom: 40px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      transition: var(--transition);
+    }
+
+    .machine-group-card:hover {
+      box-shadow: 0 15px 40px rgba(46, 35, 108, 0.2);
+      transform: translateY(-5px);
+    }
+
+    .machine-group-header {
+      background: linear-gradient(135deg, var(--deep-blue), var(--light-purple));
+      color: var(--snow-white);
+      padding: 25px 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .machine-group-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-blue), var(--light-purple), var(--primary-blue));
+    }
+
+    .machine-group-title {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .type-label {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--snow-white);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    /* ENHANCED TABLES */
+    .table-container {
+      padding: 30px;
+    }
+
+    .machine-table,
+    .part-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: var(--snow-white);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .machine-table th,
+    .part-table th {
+      background: linear-gradient(135deg, var(--primary-blue), var(--deep-blue));
+      color: var(--snow-white);
+      padding: 18px 15px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: none;
+      font-size: 0.9rem;
+    }
+
+    .machine-table tr,
+    .part-table tr {
+      transition: var(--transition);
+    }
+
+    /* Only show pointer cursor on clickable machine rows */
+    .machine-table tbody tr[data-row-type="machine"] {
+      cursor: pointer;
+    }
+
+    /* Parts rows should have default cursor */
+    .part-table tr {
+      cursor: default;
+    }
+
+    .machine-table tr[data-row-type="machine"]:hover {
+      background: rgba(46, 35, 108, 0.1);
+      box-shadow: 0 4px 15px rgba(46, 35, 108, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .machine-table td,
+    .part-table td {
+      padding: 15px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .machine-table tr:nth-child(even) td,
+    .part-table tr:nth-child(even) td {
+      background: var(--surface);
+    }
+
+    .machine-table td:last-child,
+    .part-table td:last-child {
+      text-align: right;
+      width: 200px;
+    }
+
+    /* ENHANCED BUTTONS */
+    .edit-btn {
+      background: linear-gradient(45deg, var(--success-green), #229954);
+      color: var(--snow-white);
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-left: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .edit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .edit-btn:hover::before {
+      left: 100%;
+    }
+
+    .edit-btn:hover {
+      background: linear-gradient(45deg, #229954, var(--success-green));
+      box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .delete-machine-btn {
+      background: linear-gradient(45deg, var(--danger-red), #c0392b);
+      color: var(--snow-white);
+      padding: 10px 12px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 1.2rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-machine-btn:hover {
+      background: linear-gradient(45deg, #c0392b, var(--danger-red));
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    /* ENHANCED PARTS SECTION */
+    .unit-parts-wrap {
+      margin: 30px;
+      background: rgba(46, 35, 108, 0.05);
+      border: 2px solid var(--primary-blue);
+      border-left: 6px solid var(--primary-blue);
+      border-radius: var(--border-radius-lg);
+      padding: 25px;
+      position: relative;
+    }
+
+    .part-section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--primary-blue);
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary-blue);
+    }
+
+    /* ENHANCED MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(23, 21, 59, 0.8);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-window {
+      background: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 90vw;
+      padding: 40px;
+      position: relative;
+      border: 2px solid var(--primary-blue);
+      animation: scaleIn 0.3s ease;
+    }
+
+    .modal-window::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-blue), var(--light-purple), var(--primary-blue));
+    }
+
+    .modal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--primary-blue);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .close-modal:hover {
+      background: var(--danger-red);
+      color: var(--snow-white);
+      transform: scale(1.1);
+    }
+
+    .classification-badge {
+        background: rgba(200, 172, 214, 0.2);
+        backdrop-filter: blur(10px);
+        color: var(--text-primary);
+        padding: 4px 12px;
+        border-radius: var(--border-radius);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .notif-icon {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      padding: 12px 16px;
+      border-radius: var(--border-radius);
+      font-size: 1.2rem;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: var(--transition);
+      position: relative;
+      font-weight: 600;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 768px) {
+      .app-header-logo {
+        font-size: 2rem;
+      }
+
+      .controls-container {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .inventory-container,
+      .controls-section,
+      .header-container {
+        padding: 0 15px;
+      }
+
+      .machine-group-header {
+        padding: 20px;
+      }
+
+      .table-container {
+        padding: 20px;
+        overflow-x: auto;
+      }
+
+      .machine-table,
+      .part-table {
+        min-width: 600px;
+      }
+
+      nav {
+          padding: 6px 16px;
+          gap: 16px;
+          min-height: 48px;
+      }
+
+      nav a {
+          height: 36px;
+          padding: 6px 16px;
+          font-size: 0.8rem;
+      }
+
+      header h1 {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-blue);
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--deep-blue);
+    }
+  </style>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=delete" />
+</head>
+
+<body>
+  <!-- Enhanced Header -->
+  <header>
+        <div class="header-left">
+            <img src="/static/download.png" alt="SRMS Logo" />
+            <h1 id="mainTitle" class="animated-title">SRMS-IMS View Machine Page</h1>
+        </div>
+    </header>
+
+    <nav>
+      <a href="/">Home</a>
+        <a href="/add">📝 Add Machine</a>
+    </nav>
+
+  <!-- Enhanced Controls -->
+  <div class="controls-section">
+    <div class="controls-container">
+      <div class="filter-control">
+        <div id="machine-heading" class="clickable-heading">
+          🔧 Filter Equipment
+        </div>
+        <div id="machine-filter-menu" class="filter-menu hidden">
+          <label><input type="radio" name="machineType" value="both" checked> All Equipment</label>
+          <label><input type="radio" name="machineType" value="standalone"> Standalone Units</label>
+          <label><input type="radio" name="machineType" value="assembled"> Assembled Systems</label>
+        </div>
+      </div>
+      <div class="search-container">
+        <input type="text" id="machine-search" placeholder="🔍 Search equipment registry...">
+      </div>
+    </div>
+  </div>
+
+  <div class="inventory-container">
+    <!-- Standalone Equipment -->
+    {% for name, machines in smachines.items() %}
+    <div class="machine-group-card">
+      <div class="machine-group-header">
+        <div class="machine-group-title">
+          <span class="machine-name">{{ name }}</span>
+          <span class="type-label">Standalone Unit</span>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="machine-table">
+          <thead>
+            <tr>
+              <th>Model No.</th>
+              {% if view == "true" %}
+              <th>Department</th>
+              {% endif %}
+              <th>Last Service</th>
+              <th>Acquisition Date</th>
+              <th>Next Service</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in machines %}
+            <tr data-row-type="machine" data-uid="{{ m.m_uid }}" data-sno="{{ m.sno }}">
+              <td data-label="Equipment ID">{{ m.m_uid }}</td>
+              {% if view == "true" %}
+              {% for d in dep %}
+              {% if m.department == d.sno %}
+              <td data-label="Department">{{ d.name }}</td>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              <td data-label="Last Service">{{ m.ls_date }}</td>
+              <td data-label="Acquisition Date">{{ m.up_date }}</td>
+              <td data-label="Next Service">{{ m.next_date }}</td>
+              <td>
+                <button class="delete-machine-btn">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+                <button class="edit-btn">Service</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Assembled Equipment Systems -->
+    {% for machine_name, machine_list in pmachines.items() %}
+    <div class="machine-group-card">
+      <div class="machine-group-header">
+        <div class="machine-group-title">
+          <span class="machine-name">{{ machine_name }}</span>
+          <span class="type-label">Assembled System</span>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="machine-table">
+          <thead>
+            <tr>
+              <th>Model No.</th>
+              {% if view == "true" %}
+              <th>Department</th>
+              {% endif %}
+              <th>Acquisition Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in machine_list %}
+            <tr data-row-type="machine" data-uid="{{ m.m_uid }}" data-sno="{{ m.sno }}">
+              <td data-label="Equipment ID">{{ m.m_uid }}</td>
+              {% if view == "true" %}
+              {% for d in dep %}
+              {% if m.department == d.sno %}
+              <td data-label="Department">{{ d.name }}</td>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              <td data-label="Acquisition Date">{{ m.up_date }}</td>
+              <td>
+                <button class="delete-machine-btn">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Component Systems -->
+        {% for m in machine_list %}
+        <div class="unit-parts-wrap">
+          <div class="part-section-title">🔩 Components for Model No.: {{ m.m_uid }}</div>
+          <table class="part-table">
+            <thead>
+              <tr>
+                <th>Component Name</th>
+                <th>Last Service</th>
+                <th>Next Service</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for id, part_list in parts.items() %}
+              {% if id == m.sno %}
+              {% for part in part_list %}
+              <tr data-row-type="part" data-parent-uid="{{ m.m_uid }}" data-part-name="{{ part.name }}">
+                <td data-label="Component Name">{{ part.name }}</td>
+                <td data-label="Last Service">{{ part.ls_date }}</td>
+                <td data-label="Next Service">{{ part.next_date }}</td>
+                <td><button class="edit-btn">Service</button></td>
+              </tr>
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Enhanced Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal-window">
+      <div class="modal-title" id="modal-title">Service Management</div>
+      <button class="close-modal" id="modal-close">&times;</button>
+
+      <div class="modal-body">
+        <div>
+          <label for="last-service-date">Update Last Service Date:</label>
+          <input type="date" id="last-service-date"
+            style="width: 100%; padding: 12px; border: 2px solid var(--concrete); border-radius: var(--border-radius); margin-top: 8px;">
+        </div>
+
+        <div id="next-service-section" style="display:none; margin-top: 20px;">
+          <p style="margin-bottom:10px; font-weight: 600;">Next service date is approaching!</p>
+          <div>
+            <label for="new-service-date">Service Completion Date:</label>
+            <input type="date" id="new-service-date"
+              style="width: 100%; padding: 12px; border: 2px solid var(--concrete); border-radius: var(--border-radius); margin-top: 8px;">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 30px;">
+        <button id="save-last-date" class="edit-btn" style="width: 100%; margin: 10px 0;">Update Service Record</button>
+        <button id="service-done-btn" class="edit-btn" style="display:none; width: 100%; margin: 10px 0;">Complete
+          Service</button>
+        <button id="ignore-btn" class="edit-btn"
+          style="background: var(--iron-gray); display:none; width: 100%; margin: 10px 0;">Defer Service</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ignoredRows = JSON.parse(localStorage.getItem('ignoredRows') || '[]');
+    let currentRow, currentUID, currentType, currentSno;
+
+    function getRowData(row) {
+      let type, uid, sno;
+      if (row.dataset.uid) {
+        type = "machine";
+        uid = row.dataset.uid;
+        sno = row.dataset.sno || "";
+      } else {
+        type = "part";
+        uid = row.dataset.parentUid;
+        sno = row.dataset.sno || "";
+      }
+      return { type, uid, sno };
+    }
+
+    function machineAction(action, extraData = {}) {
+      return fetch(`/umachine/${currentSno}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, uid: currentUID, typee: currentType, sno: currentSno, ...extraData })
+      }).then(res => res.json());
+    }
+
+    // Enhanced machine row click navigation
+    document.querySelectorAll('.machine-table tbody tr[data-row-type="machine"]').forEach(row => {
+      row.addEventListener('click', function (e) {
+        // Prevent navigation if clicking on buttons
+        if (e.target.closest('.edit-btn') || e.target.closest('.delete-machine-btn')) return;
+
+        // Only navigate if this row has a UID (which indicates it's a main machine entry)
+        const uid = row.getAttribute('data-uid');
+        if (uid) {
+          // Add loading state
+          row.style.opacity = '0.7';
+          window.location.href = `/machine/${uid}`;
+        }
+      });
+    });
+
+    // Enhanced edit functionality
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentRow = btn.closest('tr');
+        const data = getRowData(currentRow);
+        currentUID = data.uid;
+        currentType = data.type;
+        currentSno = data.sno;
+
+        const lastServiceCell = currentRow.querySelector('[data-label="Last Service"]');
+        const nextServiceCell = currentRow.querySelector('[data-label="Next Service"]');
+
+        if (nextServiceCell) {
+          const nextDate = new Date(nextServiceCell.innerText);
+          const daysDiff = Math.ceil((nextDate - new Date()) / (1000 * 60 * 60 * 24));
+
+          document.getElementById('last-service-date').value =
+            formatDateForInput(lastServiceCell?.innerText || '');
+
+          if (daysDiff <= 10) {
+            document.getElementById('last-service-date').parentElement.style.display = "none";
+            document.getElementById('save-last-date').style.display = "none";
+            document.getElementById('service-done-btn').style.display = "block";
+            document.getElementById('ignore-btn').style.display = "block";
+          } else {
+            document.getElementById('last-service-date').parentElement.style.display = "block";
+            document.getElementById('save-last-date').style.display = "block";
+            document.getElementById('service-done-btn').style.display = "none";
+            document.getElementById('ignore-btn').style.display = "none";
+          }
+        }
+
+        document.getElementById('edit-modal').classList.add('active');
+      });
+    });
+
+    // Enhanced delete functionality
+    document.querySelectorAll('.delete-machine-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const row = btn.closest('tr');
+        const uid = row.getAttribute('data-uid');
+
+        if (confirm(`Are you sure you want to delete equipment ${uid}? This action cannot be undone.`)) {
+          btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span>';
+          btn.disabled = true;
+
+          const data = getRowData(row);
+          currentUID = data.uid;
+          currentType = data.type;
+          currentSno = data.sno;
+
+          machineAction("delete").then(() => location.reload()).catch(() => {
+            btn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+            btn.disabled = false;
+          });
+        }
+      });
+    });
+
+    // Modal actions
+    document.getElementById('save-last-date').addEventListener('click', () => {
+      const dateVal = document.getElementById('last-service-date').value;
+      machineAction("update_service", { date: dateVal }).then(() => location.reload());
+    });
+
+    document.getElementById('service-done-btn').addEventListener('click', () => {
+      document.getElementById('next-service-section').style.display = "block";
+    });
+
+    document.querySelector('#new-service-date').addEventListener('change', () => {
+      const newDate = document.getElementById('new-service-date').value;
+      if (!newDate) return;
+      machineAction("update_service", { date: newDate }).then(() => location.reload());
+    });
+
+    document.getElementById('ignore-btn').addEventListener('click', () => {
+      if (!ignoredRows.includes(currentUID)) {
+        ignoredRows.push(currentUID);
+        localStorage.setItem('ignoredRows', JSON.stringify(ignoredRows));
+      }
+      currentRow.style.opacity = '0.5';
+      closeModal();
+    });
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.querySelector('.modal-overlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+
+    function closeModal() {
+      document.getElementById('edit-modal').classList.remove('active');
+    }
+
+    function formatDateForInput(dateStr) {
+      const d = new Date(dateStr);
+      return !isNaN(d) ? d.toISOString().split('T')[0] : '';
+    }
+
+    // Enhanced filtering and search
+    const heading = document.getElementById('machine-heading');
+    const filterMenu = document.getElementById('machine-filter-menu');
+    const searchInput = document.getElementById('machine-search');
+
+    function filterMachines() {
+      const filterValue = document.querySelector('input[name="machineType"]:checked').value;
+      const searchTerm = searchInput.value.toLowerCase();
+
+      document.querySelectorAll('.machine-group-card').forEach(card => {
+        const type = card.querySelector('.type-label')?.textContent.trim().toLowerCase();
+        const name = card.querySelector('.machine-name')?.textContent.trim().toLowerCase();
+
+        let typeMatch = (filterValue === 'both') ||
+          (filterValue === 'standalone' && type.includes('standalone')) ||
+          (filterValue === 'assembled' && type.includes('assembled'));
+
+        let searchMatch = !searchTerm || name.includes(searchTerm) || type.includes(searchTerm);
+
+        if (typeMatch && searchMatch) {
+          card.style.display = '';
+          card.style.animation = 'fadeIn 0.3s ease';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    heading.addEventListener('click', () => {
+      filterMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!heading.contains(e.target) && !filterMenu.contains(e.target)) {
+        filterMenu.classList.add('hidden');
+      }
+    });
+
+    filterMenu.addEventListener('change', filterMachines);
+    searchInput.addEventListener('input', filterMachines);
+
+    // Apply initial styles
+    document.querySelectorAll('tbody tr').forEach(row => {
+      const uid = row.dataset.uid || row.dataset.parentUid;
+      if (ignoredRows.includes(uid)) {
+        row.style.opacity = '0.5';
+      }
+
+      const nextCell = row.querySelector('[data-label="Next Service"]');
+      if (nextCell) {
+        const date = new Date(nextCell.innerText);
+        const today = new Date();
+        if (date < today) {
+          nextCell.style.color = 'var(--danger-red)';
+          nextCell.style.fontWeight = 'bold';
+          nextCell.innerHTML += ' ⚠️';
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

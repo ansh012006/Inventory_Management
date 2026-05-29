@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FCM Test</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+</head>
+<body>
+  <h3>FCM Test Page</h3>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7AojYDPZEk6HjDNLLIXlv5qoA0dZbqF4",
+      authDomain: "srmc-5d645.firebaseapp.com",
+      projectId: "srmc-5d645",
+      messagingSenderId: "694287683451",
+      appId: "1:694287683451:web:29ba8eb1eb4e249afff7de",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+
+    navigator.serviceWorker.register("/static/firebase-messaging-sw.js")
+      .then((reg) => {
+        console.log("✅ Service Worker registered");
+
+        messaging.getToken({
+          vapidKey: "BGy2Qz7KJ4GavJbV882SY_kKWe4E7LX0XeOg013TfHnGyl5pj3ff85KxyW9B85N8Mt58bWCt7Oq07G7NFotJpQs",
+          serviceWorkerRegistration: reg
+        }).then((token) => {
+          if (token) {
+            console.log("🎯 Token:", token);
+          } else {
+            console.warn("⚠️ No token available");
+          }
+        }).catch((err) => {
+          console.error("❌ Error getting token:", err);
+        });
+      }).catch((err) => {
+        console.error("❌ SW registration failed:", err);
+      });
+  </script>
+</body>
+</html>

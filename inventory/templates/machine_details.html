@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Equipment Details - {{ machine.name }} ({{ machine.m_uid }})</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-blue: #433D8B;
+    --deep-blue: #2E236C;
+    --steel-blue: #17153B;
+    --slate-gray: #2E236C;
+    --iron-gray: #433D8B;
+    --concrete: #C8ACD6;
+    --snow-white: #f8f9fa; /* Keeping light backgrounds as is for readability */
+    --paper-white: #f4f6f8;
+    --charcoal: #17153B;
+    --midnight: #17153B;
+    --amber: #C8ACD6; /* Using light purple for accent */
+    --warning-orange: #C8ACD6; /* Using light purple for warning */
+    --success-green: #433D8B; /* Using medium purple for success */
+    --danger-red: #2E236C; /* Using dark purple for danger */
+    --background: linear-gradient(135deg, #C8ACD6 0%, #f4f6f8 100%);
+    --card-bg: var(--snow-white);
+    --surface: var(--paper-white);
+    --text-primary: var(--steel-blue);
+    --text-secondary: var(--slate-gray);
+    --text-muted: var(--iron-gray);
+    --border: #C8ACD6;
+    --shadow: rgba(67, 61, 139, 0.15);
+    --shadow-heavy: rgba(67, 61, 139, 0.25);
+    --glow: 0 0 20px rgba(67, 61, 139, 0.3);
+    --border-radius: 6px;
+    --border-radius-lg: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--background);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* HEADER */
+        .app-header {
+            background: linear-gradient(135deg, var(--midnight) 0%, var(--charcoal) 100%);
+            color: var(--snow-white);
+            padding: 30px 0;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 30px var(--shadow-heavy);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--amber) 50%, var(--primary-blue) 100%);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .header-left .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        .machine-type-badge {
+            background: {% if is_assembled %}var(--warning-orange){% else %}var(--primary-blue){% endif %};
+            color: var(--snow-white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            margin-left: 15px;
+        }
+
+        .back-button {
+            background: linear-gradient(45deg, var(--primary-blue), var(--deep-blue));
+            color: var(--snow-white);
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius-lg);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(45deg, var(--deep-blue), var(--primary-blue));
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        /* CARDS */
+        .detail-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 8px 25px var(--shadow);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .detail-card:hover {
+            box-shadow: 0 12px 35px rgba(79, 70, 229, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--steel-blue), var(--slate-gray));
+            color: var(--snow-white);
+            padding: 20px 30px;
+            position: relative;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--amber), var(--primary-blue));
+        }
+
+        .card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .edit-toggle {
+            background: var(--success-green);
+            color: var(--snow-white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .edit-toggle:hover {
+            background: #229954;
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        /* INFO GRID */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .info-item {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-blue);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .info-item:hover {
+            background: rgba(79, 70, 229, 0.05);
+            transform: translateX(5px);
+        }
+
+        /* READ ONLY FIELDS */
+        .info-item.readonly {
+            background: #f8f9fa;
+            border-left-color: #6c757d;
+            opacity: 0.9;
+        }
+
+        .info-item.readonly:hover {
+            background: #f8f9fa;
+            transform: none;
+        }
+
+        .info-item.readonly .info-label::after {
+            content: " (Read Only)";
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-weight: normal;
+        }
+
+        .info-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .info-input {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--primary-blue);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--snow-white);
+        }
+
+        .info-select {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--primary-blue);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--snow-white);
+        }
+
+        /* EDIT MODE */
+        .edit-mode .info-value {
+            display: none;
+        }
+
+        .edit-mode .info-input,
+        .edit-mode .info-select {
+            display: block;
+        }
+
+        /* Read-only fields should never show inputs even in edit mode */
+        .edit-mode .info-item.readonly .info-value {
+            display: block !important;
+        }
+
+        .edit-mode .info-item.readonly .info-input,
+        .edit-mode .info-item.readonly .info-select {
+            display: none !important;
+        }
+
+        /* STATUS BADGES */
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-up-to-date {
+            background: var(--success-green);
+            color: var(--snow-white);
+        }
+
+        .status-due-soon {
+            background: var(--warning-orange);
+            color: var(--snow-white);
+        }
+
+        .status-overdue {
+            background: var(--danger-red);
+            color: var(--snow-white);
+        }
+
+        .status-unknown,
+        .status-not-scheduled,
+        .status-not-applicable {
+            background: var(--iron-gray);
+            color: var(--snow-white);
+        }
+
+        /* TABLES */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--snow-white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, var(--primary-blue), var(--deep-blue));
+            color: var(--snow-white);
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .data-table tr:nth-child(even) td {
+            background: var(--surface);
+        }
+
+        .data-table tr:hover td {
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        .editable-cell {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .editable-cell:hover {
+            background: rgba(79, 70, 229, 0.2) !important;
+        }
+
+        .cell-input {
+            display: none;
+            width: 100%;
+            padding: 5px;
+            border: 2px solid var(--primary-blue);
+            border-radius: var(--border-radius);
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-blue), var(--deep-blue));
+            color: var(--snow-white);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, var(--success-green), #229954);
+            color: var(--snow-white);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, var(--danger-red), #c0392b);
+            color: var(--snow-white);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, var(--warning-orange), #d35400);
+            color: var(--snow-white);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-window {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90vw;
+            padding: 40px;
+            position: relative;
+            border: 2px solid var(--primary-blue);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-blue);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--concrete);
+            border-radius: var(--border-radius);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.2);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            background: var(--danger-red);
+            color: var(--snow-white);
+        }
+
+        /* SAVE INDICATOR */
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-green);
+            color: var(--snow-white);
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            display: none;
+            z-index: 1001;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-container {
+                padding: 0 15px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .card-title {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        .action-buttons.edit-mode {
+            background: rgba(79, 70, 229, 0.1);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--primary-blue);
+            margin-top: 25px;
+        }
+
+        .edit-toggle.editing {
+            background: var(--warning-orange) !important;
+        }
+
+        .edit-toggle.editing:hover {
+            background: var(--danger-red) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Save Indicator -->
+    <div class="save-indicator" id="save-indicator">✓ Changes Saved</div>
+
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-container">
+            <div class="header-left">
+                <h1>🏭 {{ machine.name }}
+                    <span class="machine-type-badge">
+                        {% if is_assembled %}Assembled System{% else %}Standalone Unit{% endif %}
+                    </span>
+                </h1>
+                <div class="subtitle">Equipment ID: {{ machine.m_uid }} | {{ machine.typee }}</div>
+            </div>
+            <a href="/" class="back-button">
+                ← Back to Registry
+            </a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Basic Information Card -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-title">
+                    🔧 Basic Information
+                    <button class="edit-toggle" onclick="toggleEdit('basic-info')">Edit Details</button>
+                </div>
+            </div>
+            <div class="card-body" id="basic-info">
+                <div class="info-grid">
+                    <!-- READ-ONLY FIELDS -->
+                    <div class="info-item readonly">
+                        <div class="info-label">Equipment Name</div>
+                        <div class="info-value">{{ machine.name }}</div>
+                    </div>
+                    
+                    <div class="info-item readonly">
+                        <div class="info-label">Model No.</div>
+                        <div class="info-value">{{ machine.m_uid }}</div>
+                    </div>
+                    
+                    <div class="info-item readonly">
+                        <div class="info-label">Manufacturer</div>
+                        <div class="info-value">{{ manufacturer.name if manufacturer else 'Not Specified' }}</div>
+                    </div>
+                    
+                    <div class="info-item readonly">
+                        <div class="info-label">Acquisition Date</div>
+                        <div class="info-value">{{ machine.up_date.strftime('%B %d, %Y') if machine.up_date else 'Unknown' }}</div>
+                    </div>
+                    
+                    <!-- EDITABLE FIELDS -->
+                    <div class="info-item" data-field-container="department">
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ department.name if department else 'Unknown' }}</div>
+                        <select class="info-select" data-field="department">
+                            {% for dept in all_departments %}
+                            <option value="{{ dept.sno }}" {% if machine.department==dept.sno %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="info-item" data-field-container="typee">
+                        <div class="info-label">Equipment Type</div>
+                        <div class="info-value">{{ machine.typee }}</div>
+                        <input type="text" class="info-input" value="{{ machine.typee }}" data-field="typee">
+                    </div>
+                    
+                    <div class="info-item" data-field-container="service_location">
+                        <div class="info-label">Service Location</div>
+                        <div class="info-value">{{ machine.service_location or 'Not Specified' }}</div>
+                        <input type="text" class="info-input" value="{{ machine.service_location or '' }}" data-field="service_location">
+                    </div>
+                    
+                    {% if not is_assembled %}
+                    <div class="info-item" data-field-container="interval">
+                        <div class="info-label">Service Interval (Days)</div>
+                        <div class="info-value">{{ machine.interval or 'Not Set' }}</div>
+                        <input type="number" class="info-input" value="{{ machine.interval or '' }}" data-field="interval">
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="action-buttons edit-mode" style="display: none;">
+                    <button class="btn btn-success" onclick="saveBasicInfo()">💾 Save Changes</button>
+                    <button class="btn btn-danger" onclick="cancelEdit('basic-info')">❌ Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Information Card (Only for Standalone) -->
+        {% if not is_assembled %}
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-title">
+                    📅 Service Information
+                    <button class="edit-toggle" onclick="toggleEdit('service-info')">Edit Service</button>
+                </div>
+            </div>
+            <div class="card-body" id="service-info">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Last Service Date</div>
+                        <div class="info-value">{{ machine.ls_date.strftime('%B %d, %Y') if machine.ls_date else 'Never Serviced' }}</div>
+                        <input type="date" class="info-input" value="{{ machine.ls_date.strftime('%Y-%m-%d') if machine.ls_date else '' }}" data-field="ls_date">
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Next Service Date</div>
+                        <div class="info-value">{{ next_service_date.strftime('%B %d, %Y') if next_service_date else 'Not Scheduled' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Service Status</div>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ service_status.lower().replace(' ', '-') }}">
+                                {{ service_status }}
+                                {% if days_until_service is not none %}
+                                {% if days_until_service < 0 %} ({{ abs(days_until_service) }} days overdue) {% elif days_until_service <=10 %} ({{ days_until_service }} days remaining) {% endif %}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons edit-mode" style="display: none;">
+                    <button class="btn btn-success" onclick="saveServiceInfo()">💾 Save Service Info</button>
+                    <button class="btn btn-danger" onclick="cancelEdit('service-info')">❌ Cancel</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="openQuickServiceModal()">
+                        🔧 Quick Service Update
+                    </button>
+                    <button class="btn btn-primary" onclick="openLogModal()">
+                        📝 Add Service Log
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Components/Parts Section (Only for Assembled) -->
+        {% if is_assembled %}
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-title">
+                    🔩 System Components
+                    <button class="btn btn-success" onclick="openAddPartModal()">+ Add Component</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Component Name</th>
+                            <th>Service Interval (Days)</th>
+                            <th>Last Service</th>
+                            <th>Next Service</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="parts-table-body">
+                        {% for part in machine_parts %}
+                        <tr data-part-id="{{ part.sno }}">
+                            <td class="editable-cell" data-field="name" data-original="{{ part.name }}">{{ part.name }}</td>
+                            <td class="editable-cell" data-field="interval" data-original="{{ part.interval or '' }}">{{ part.interval or 'Not Set' }}</td>
+                            <td class="editable-cell" data-field="ls_date" data-original="{{ part.ls_date.strftime('%Y-%m-%d') if part.ls_date else '' }}">{{ part.ls_date.strftime('%Y-%m-%d') if part.ls_date else 'Never' }}</td>
+                            <td>{{ part.next_date.strftime('%Y-%m-%d') if part.next_date else 'Not Scheduled' }}</td>
+                            <td>
+                                <span class="status-badge status-{{ part.status.lower().replace(' ', '-') }}">
+                                    {{ part.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-success" onclick="serviceComponent({{ part.sno }}, '{{ part.name }}')">
+                                    🔧 Service
+                                </button>
+                                <button class="btn btn-danger" onclick="deletePart({{ part.sno }})">
+                                    🗑️ Remove
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Service History -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-title">
+                    📋 Service History
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Service Log</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in service_logs %}
+                        <tr>
+                            <td>{{ log.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ log.msg }}</td>
+                            <td>
+                                <button class="btn btn-danger" onclick="deleteLog({{ log.sno }})">🗑️ Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Service Modal -->
+    <div class="modal-overlay" id="service-modal">
+        <div class="modal-window">
+            <button class="close-modal" onclick="closeModal('service-modal')">&times;</button>
+            <div class="modal-title">Quick Service Update</div>
+            <form id="service-form">
+                <div class="form-group">
+                    <label for="service-date">Service Date:</label>
+                    <input type="date" id="service-date" name="service-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="service-notes">Service Notes:</label>
+                    <textarea id="service-notes" name="service-notes" rows="4" placeholder="Enter service details..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Update Service Record</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Part Modal -->
+    <div class="modal-overlay" id="add-part-modal">
+        <div class="modal-window">
+            <button class="close-modal" onclick="closeModal('add-part-modal')">&times;</button>
+            <div class="modal-title">Add Component</div>
+            <form id="add-part-form">
+                <div class="form-group">
+                    <label for="part-name">Component Name:</label>
+                    <select id="part-name" name="part-name" required>
+                        <option value="">Select Component</option>
+                        {% for part in available_parts %}
+                        <option value="{{ part.name }}" data-interval="{{ part.interval }}">{{ part.name }}</option>
+                        {% endfor %}
+                        <option value="custom">Custom Component</option>
+                    </select>
+                </div>
+                <div class="form-group" id="custom-name-group" style="display: none;">
+                    <label for="custom-part-name">Custom Component Name:</label>
+                    <input type="text" id="custom-part-name" name="custom-part-name">
+                </div>
+                <div class="form-group">
+                    <label for="part-interval">Service Interval (Days):</label>
+                    <input type="number" id="part-interval" name="part-interval" required>
+                </div>
+                <div class="form-group">
+                    <label for="part-service-date">Initial Service Date (Optional):</label>
+                    <input type="date" id="part-service-date" name="part-service-date">
+                </div>
+                <button type="submit" class="btn btn-success">Add Component</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Service Log Modal -->
+    <div class="modal-overlay" id="log-modal">
+        <div class="modal-window">
+            <button class="close-modal" onclick="closeModal('log-modal')">&times;</button>
+            <div class="modal-title">Add Service Log</div>
+            <form id="log-form">
+                <div class="form-group">
+                    <label for="log-message">Log Message:</label>
+                    <textarea id="log-message" name="log-message" rows="4" placeholder="Enter service log details..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Log Entry</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let isEditMode = false;
+        let originalValues = {};
+
+        function toggleEdit(sectionId) {
+            const section = document.getElementById(sectionId);
+            const card = section.closest('.detail-card');
+            const editToggle = card.querySelector('.edit-toggle');
+            const actionButtons = section.querySelector('.action-buttons.edit-mode');
+            const editMode = !section.classList.contains('edit-mode');
+
+            if (editMode) {
+                // Store original values
+                originalValues[sectionId] = {};
+                section.querySelectorAll('[data-field]').forEach(el => {
+                    const field = el.dataset.field;
+                    if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                        originalValues[sectionId][field] = el.value;
+                    }
+                });
+
+                section.classList.add('edit-mode');
+                if (editToggle) {
+                    editToggle.textContent = 'Cancel Edit';
+                    editToggle.style.background = 'var(--danger-red)';
+                    editToggle.classList.add('editing');
+                }
+                if (actionButtons) {
+                    actionButtons.style.display = 'flex';
+                    actionButtons.style.background = 'rgba(79, 70, 229, 0.1)';
+                    actionButtons.style.padding = '20px';
+                    actionButtons.style.borderRadius = 'var(--border-radius)';
+                    actionButtons.style.border = '2px solid var(--primary-blue)';
+                }
+            } else {
+                cancelEdit(sectionId);
+            }
+        }
+
+        function cancelEdit(sectionId) {
+            const section = document.getElementById(sectionId);
+            const card = section.closest('.detail-card');
+            const editToggle = card.querySelector('.edit-toggle');
+            const actionButtons = section.querySelector('.action-buttons.edit-mode');
+
+            // Restore original values
+            if (originalValues[sectionId]) {
+                section.querySelectorAll('[data-field]').forEach(el => {
+                    const field = el.dataset.field;
+                    if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                        el.value = originalValues[sectionId][field] || '';
+                    }
+                });
+            }
+
+            section.classList.remove('edit-mode');
+            if (editToggle) {
+                editToggle.textContent = 'Edit Details';
+                editToggle.style.background = '';
+                editToggle.classList.remove('editing');
+            }
+            if (actionButtons) {
+                actionButtons.style.display = 'none';
+            }
+        }
+
+        function showSaveIndicator() {
+            const indicator = document.getElementById('save-indicator');
+            indicator.style.display = 'block';
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 2000);
+        }
+
+        function saveBasicInfo() {
+            const section = document.getElementById('basic-info');
+            const data = {};
+
+            // Define fields that are allowed to be updated (exclude read-only fields)
+            const editableFields = ['department', 'service_location', 'interval'];
+
+            // Collect only editable field values
+            section.querySelectorAll('[data-field]').forEach(el => {
+                if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                    const fieldName = el.dataset.field;
+                    if (editableFields.includes(fieldName)) {
+                        data[fieldName] = el.value;
+                    }
+                }
+            });
+
+            console.log('Sending data:', data);
+
+            fetch(`/machine/{{ machine.m_uid }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_basic_info',
+                    data: data
+                })
+            })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(result => {
+                    console.log('Server response:', result);
+
+                    if (result.success) {
+                        showSaveIndicator();
+
+                        // Update each display value using the data-field-container attribute
+                        Object.keys(data).forEach(fieldName => {
+                            const container = section.querySelector(`[data-field-container="${fieldName}"]`);
+                            if (container) {
+                                const input = container.querySelector(`[data-field="${fieldName}"]`);
+                                const valueDiv = container.querySelector('.info-value');
+
+                                if (input && valueDiv) {
+                                    if (input.tagName === 'SELECT' && input.value) {
+                                        const selectedOption = input.options[input.selectedIndex];
+                                        valueDiv.textContent = selectedOption.text;
+                                    } else if (fieldName === 'interval' && !input.value) {
+                                        valueDiv.textContent = 'Not Set';
+                                    } else {
+                                        valueDiv.textContent = input.value || 'Not Specified';
+                                    }
+                                }
+                            }
+                        });
+
+                        cancelEdit('basic-info');
+                    } else {
+                        alert('Error updating information: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred while saving');
+                });
+        }
+
+        function saveServiceInfo() {
+            const section = document.getElementById('service-info');
+            const lsDateInput = section.querySelector('[data-field="ls_date"]');
+
+            fetch(`/machine/{{ machine.m_uid }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_service_info',
+                    ls_date: lsDateInput.value
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showSaveIndicator();
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        alert('Error updating service information: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred while saving');
+                });
+        }
+
+        // Make table cells editable
+        document.querySelectorAll('.editable-cell').forEach(cell => {
+            cell.addEventListener('click', function () {
+                if (this.querySelector('.cell-input')) return;
+
+                const originalValue = this.dataset.original || this.textContent.trim();
+                const field = this.dataset.field;
+
+                let input;
+                if (field === 'ls_date') {
+                    input = document.createElement('input');
+                    input.type = 'date';
+                    input.value = originalValue;
+                } else if (field === 'interval') {
+                    input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = originalValue === 'Not Set' ? '' : originalValue;
+                } else {
+                    input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = originalValue;
+                }
+
+                input.className = 'cell-input';
+                input.style.display = 'block';
+
+                input.addEventListener('blur', function () {
+                    saveCellValue(cell, input.value, field);
+                });
+
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        saveCellValue(cell, input.value, field);
+                    }
+                });
+
+                this.innerHTML = '';
+                this.appendChild(input);
+                input.focus();
+            });
+        });
+
+        function saveCellValue(cell, newValue, field) {
+            const partId = cell.closest('tr').dataset.partId;
+
+            fetch(`/component/${partId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_field',
+                    field: field,
+                    value: newValue
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showSaveIndicator();
+                        cell.dataset.original = newValue;
+                        cell.textContent = newValue || (field === 'interval' ? 'Not Set' : 'Never');
+
+                        if (field === 'interval' || field === 'ls_date') {
+                            setTimeout(() => location.reload(), 1000);
+                        }
+                    } else {
+                        alert('Error updating component: ' + (result.error || 'Unknown error'));
+                        cell.textContent = cell.dataset.original;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred while saving');
+                    cell.textContent = cell.dataset.original;
+                });
+        }
+
+        function openQuickServiceModal() {
+            document.getElementById('service-modal').classList.add('active');
+            document.getElementById('service-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function openLogModal() {
+            document.getElementById('log-modal').classList.add('active');
+        }
+
+        function openAddPartModal() {
+            document.getElementById('add-part-modal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function serviceComponent(componentId, componentName) {
+            const serviceDate = prompt(`Enter service date for ${componentName} (YYYY-MM-DD):`, new Date().toISOString().split('T')[0]);
+            if (!serviceDate) return;
+
+            fetch(`/component/${componentId}/service`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_service',
+                    date: serviceDate
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showSaveIndicator();
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        alert('Error updating service: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred while updating service');
+                });
+        }
+
+        function deletePart(partId) {
+            if (!confirm('Are you sure you want to remove this component?')) return;
+
+            fetch(`/component/${partId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showSaveIndicator();
+                        document.querySelector(`tr[data-part-id="${partId}"]`).remove();
+                    } else {
+                        alert('Error deleting component: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred while deleting');
+                });
+        }
+
+        function deleteLog(logId) {
+            if (!confirm('Are you sure you want to delete this log entry?')) return;
+
+            fetch(`/log/${logId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting log: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred while deleting');
+                });
+        }
+
+        // Form submissions
+        document.getElementById('service-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const serviceDate = document.getElementById('service-date').value;
+            const serviceNotes = document.getElementById('service-notes').value;
+
+            fetch(`/machine/{{ machine.m_uid }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_service',
+                    date: serviceDate,
+                    notes: serviceNotes
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        closeModal('service-modal');
+                        location.reload();
+                    } else {
+                        alert('Error updating service: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred');
+                });
+        });
+
+        document.getElementById('add-part-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const partName = document.getElementById('part-name').value === 'custom'
+                ? document.getElementById('custom-part-name').value
+                : document.getElementById('part-name').value;
+            const interval = document.getElementById('part-interval').value;
+            const serviceDate = document.getElementById('part-service-date').value;
+
+            fetch(`/machine/{{ machine.m_uid }}/add-part`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: partName,
+                    interval: interval,
+                    ls_date: serviceDate
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        closeModal('add-part-modal');
+                        location.reload();
+                    } else {
+                        alert('Error adding component: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred');
+                });
+        });
+
+        document.getElementById('log-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const logMessage = document.getElementById('log-message').value;
+
+            fetch(`/machine/{{ machine.m_uid }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'add_log',
+                    message: `UID:{{ machine.m_uid }} - ${logMessage}`
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        closeModal('log-modal');
+                        location.reload();
+                    } else {
+                        alert('Error adding log: ' + (result.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error occurred');
+                });
+        });
+
+        // Part selection handling
+        document.getElementById('part-name').addEventListener('change', function () {
+            const customGroup = document.getElementById('custom-name-group');
+            const intervalInput = document.getElementById('part-interval');
+
+            if (this.value === 'custom') {
+                customGroup.style.display = 'block';
+            } else {
+                customGroup.style.display = 'none';
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.dataset.interval) {
+                    intervalInput.value = selectedOption.dataset.interval;
+                }
+            }
+        });
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
