@@ -10,7 +10,7 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyD7AojYDPZEk6HjDNLLIXlv5qoA0dZbqF4",
+      apiKey: "Gemini_API_KEY",
       authDomain: "srmc-5d645.firebaseapp.com",
       projectId: "srmc-5d645",
       messagingSenderId: "694287683451",
@@ -25,7 +25,7 @@
         console.log("✅ Service Worker registered");
 
         messaging.getToken({
-          vapidKey: "BGy2Qz7KJ4GavJbV882SY_kKWe4E7LX0XeOg013TfHnGyl5pj3ff85KxyW9B85N8Mt58bWCt7Oq07G7NFotJpQs",
+          vapidKey: "YOUR_KEY",
           serviceWorkerRegistration: reg
         }).then((token) => {
           if (token) {
