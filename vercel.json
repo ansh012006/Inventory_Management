@@ -1,0 +1,11 @@
+{
+    "outputDirectory":  ".",
+    "buildCommand":  "pip install -r requirements.txt",
+    "functions":  {
+                      "app.py":  {
+                                     "runtime":  "@vercel/python"
+                                 }
+                  },
+    "framework":  "flask",
+    "installCommand":  "pip install -r requirements.txt"
+}

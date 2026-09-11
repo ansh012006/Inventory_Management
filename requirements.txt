@@ -1,0 +1,6 @@
+firebase_admin
+flask
+flask_mail
+flask_sqlalchemy
+sqlalchemy
+sqlite3
