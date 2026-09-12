@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.db
+instance/
+.vercel
+.env
+fb_notify.json

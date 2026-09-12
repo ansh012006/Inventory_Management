@@ -4,19 +4,23 @@ from sqlalchemy import inspect
 from datetime import date,timedelta,datetime
 from collections import defaultdict
 from flask_mail import Mail, Message
+import os
 import firebase_admin
 
 from firebase_admin import credentials, messaging
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///inventory.db"
+app = Flask(__name__, template_folder="inventory/templates", static_folder="inventory/static")
+app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
+_db_path = "/tmp/inventory.db" if os.environ.get("VERCEL") else "inventory.db"
+# ponytail: /tmp is only writable dir on Vercel serverless, data resets on redeploy; use Postgres when persistence matters
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{_db_path}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'srms.inventory@gmail.com'
-app.config['MAIL_PASSWORD'] = 'ilslkasxuyqcqnke'  # Use app password, NOT your login
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'srms.inventory@gmail.com')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
@@ -48,7 +52,7 @@ def check_and_notify_due_services():
         days_left = (next_date - today).days
         if days_left <= 10:
             msg = f"[MACHINE] {m.name} service due on {next_date} (in {days_left} days)"
-            notify("cjueTYrUs6cl8tlC-Np5P5:APA91bEt1rvCe9CA0dVPSRbAqQE1EQ3YTyCfih4dw5fB6r7iKnJiuAEz_PKJgzchyF7YGW4dd37uhLvCGldXJyRH8cu9l0oGLZhCCku-i8Slg2i6OUevFtc",msg)
+            notify(os.environ.get("FCM_TOKEN", ""),msg)
             if days_left < 3:
                 send_email_alert(msg)
 
@@ -59,7 +63,7 @@ def check_and_notify_due_services():
         if days_left <= 10:
             m = Machine.query.filter_by(sno=p.m_id).first()
             msg = f"[PART] machine/id:{m.name}/{m.sno} {p.name} (Machine ID: {p.m_id}) service due on {next_date} (in {days_left} days)"
-            notify("cjueTYrUs6cl8tlC-Np5P5:APA91bEt1rvCe9CA0dVPSRbAqQE1EQ3YTyCfih4dw5fB6r7iKnJiuAEz_PKJgzchyF7YGW4dd37uhLvCGldXJyRH8cu9l0oGLZhCCku-i8Slg2i6OUevFtc",msg)
+            notify(os.environ.get("FCM_TOKEN", ""),msg)
             if days_left < 3:
                 send_email_alert(msg)
 
@@ -94,8 +98,12 @@ def notificationlist():
 
 
 def send_email_alert(body):
-    subject = "🔴 Machine Service Due Soon"
-    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["vishnoiunnati811@gmail.com"])
+    if not app.config.get('MAIL_PASSWORD'):
+        print("Email skipped (MAIL_PASSWORD not set):", body)
+        return
+    subject = "Machine Service Due Soon"
+    recipients = [os.environ.get("ALERT_EMAIL", "vishnoiunnati811@gmail.com")]
+    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=recipients)
     msg.body = body
     try:
         mail.send(msg)
@@ -108,11 +116,23 @@ def send_email_alert(body):
 def notify(t, msg):
     from firebase_admin import get_app, _apps
     print("hi it",msg)
+    t = t or os.environ.get("FCM_TOKEN", "")
+    if not t:
+        print("Notification skipped (no FCM token)")
+        return
 
     # Only initialize the app if it hasn't been initialized yet
     if not _apps:
-        cred = credentials.Certificate('/Users/unnativishnoi/Downloads/inventory/fb_notify.json')
-        firebase_admin.initialize_app(cred)
+        cred_path = os.environ.get("FIREBASE_CREDENTIALS_FILE", "fb_notify.json")
+        if not os.path.exists(cred_path):
+            print(f"Notification skipped (missing {cred_path})")
+            return
+        try:
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+        except Exception as e:
+            print("Failed to init firebase:", e)
+            return
 
     message = messaging.Message(
         notification=messaging.Notification(
@@ -747,10 +767,14 @@ def logs_page():
     return render_template("logs.html", logs=logs)
 
 
-if __name__ == '__main__':
+try:
     with app.app_context():
         db.create_all()
-        inspector = inspect(db.engine)
+except Exception:
+    pass
+
+
+if __name__ == '__main__':
     app.run(debug=True)
 
 
